@@ -42,13 +42,14 @@ class CustomPipeline(TextGenerationPipeline):
 
         # BS x SL
         output_dict = self.model.generate(input_ids=input_ids, attention_mask=attention_mask, **generate_kwargs)
-        generated_sequence = output_dict.sequences
+        generated_sequence = output_dict.sequences if self.model.config.return_dict_in_generate else output_dict
+        hidden_states = output_dict.hidden_states if self.model.config.return_dict_in_generate else None
         out_b = generated_sequence.shape[0]
         if self.framework == "pt":
             generated_sequence = generated_sequence.reshape(in_b, out_b // in_b, *generated_sequence.shape[1:])
         elif self.framework == "tf":
             generated_sequence = tf.reshape(generated_sequence, (in_b, out_b // in_b, *generated_sequence.shape[1:]))
-        return {"generated_sequence": generated_sequence, "input_ids": input_ids, "prompt_text": prompt_text, "hidden_states": output_dict.hidden_states}
+        return {"generated_sequence": generated_sequence, "input_ids": input_ids, "prompt_text": prompt_text, "hidden_states": hidden_states}
 
 
     def postprocess(self, model_outputs, **kwargs):

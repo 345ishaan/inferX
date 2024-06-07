@@ -48,6 +48,6 @@ def run(prompt: str, pretrained_model_path: str, tokenizer_model_path: str) -> s
 if __name__ == "__main__":
     prompt = sys.argv[1]
     pretrained_model_path = sys.argv[2]
-    tokenizer_model_path = sys.argv[3]
+    tokenizer_model_path = sys.argv[3] if len(sys.argv) > 3 else pretrained_model_path
     print(run_hf_pipeline(prompt, pretrained_model_path, tokenizer_model_path))
 

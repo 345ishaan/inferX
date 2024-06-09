@@ -16,3 +16,7 @@
 ## How to download Phi-3?
 
 `tune download microsoft/Phi-3-mini-4k-instruct --output-dir /home/models/phi3/ --hf-token hf_xxx --ignore-patterns ""`
+
+## Docker Instructions
+
+`docker build -t inference-phi-3-mini-4k-instruct --build-arg HF_TOKEN={HF_TOKEN} .`

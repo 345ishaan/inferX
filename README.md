@@ -10,6 +10,7 @@
   - We need this token to download the models.
 - pip install transformers
 - pip install accelerate
+- pip install flash-attn --no-build-isolation (Required for using flash attention)
 
 
 

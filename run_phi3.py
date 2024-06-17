@@ -10,6 +10,10 @@ torch.random.manual_seed(0)
 
 class CustomPipeline(TextGenerationPipeline):
 
+    def __init__(self):
+        self.model = None
+        self.tokenizer = None
+
     def _forward(self, model_inputs, **generate_kwargs):
         input_ids = model_inputs["input_ids"]
         attention_mask = model_inputs.get("attention_mask", None)
@@ -92,54 +96,55 @@ class CustomPipeline(TextGenerationPipeline):
 
 
 
-def run_hf_pipeline(prompt: str, pretrained_model_path: str, tokenizer_model_path: str) -> str:
-    model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_path,
-        device_map="cuda",
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-        output_hidden_states=True,
-        return_dict_in_generate=True,
-        attn_implementation="flash_attention_2",
-        eos_token_id=[32000,32001,32007]
-    )
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
+    def run_hf_pipeline(self, prompt: str, pretrained_model_path: str, tokenizer_model_path: str) -> str:
+        model = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_path,
+            device_map="cuda",
+            torch_dtype=torch.float16,
+            trust_remote_code=True,
+            output_hidden_states=True,
+            return_dict_in_generate=True,
+            attn_implementation="flash_attention_2",
+            eos_token_id=[32000,32001,32007]
+        )
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
+        
+        messages = [
+            {"role": "user", "content": prompt},
+        ]
+        
+        pipe = CustomPipeline(
+            model=model,
+            tokenizer=tokenizer,
+        )
+        
+        generation_args = {
+            "max_new_tokens": 500,
+            "return_full_text": False,
+            "temperature": 0.0,
+            "do_sample": False,
+        }
+        
+        output, hidden_states = pipe(messages, **generation_args)
+
+        return output[0]['generated_text']
+
+
+    def load_model(self, pretrained_model_path: str, tokenizer_model_path: str):
+        self.model = Phi3ForCausalLM.from_pretrained(pretrained_model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
     
-    messages = [
-        {"role": "user", "content": prompt},
-    ]
-    
-    pipe = CustomPipeline(
-        model=model,
-        tokenizer=tokenizer,
-    )
-    
-    generation_args = {
-        "max_new_tokens": 500,
-        "return_full_text": False,
-        "temperature": 0.0,
-        "do_sample": False,
-    }
-    
-    output, hidden_states = pipe(messages, **generation_args)
+    def run_model(self, prompt: str) -> str:
 
-    return output[0]['generated_text']
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        generate_ids = self.model.generate(inputs.input_ids, max_length=30)
+        
+        return self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
 
-
-def run(prompt: str, pretrained_model_path: str, tokenizer_model_path: str) -> str:
-    model = Phi3ForCausalLM.from_pretrained(pretrained_model_path)
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
-
-    inputs = tokenizer(prompt, return_tensors="pt")
-    generate_ids = model.generate(inputs.input_ids, max_length=30)
-    
-    return tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-
-
-if __name__ == "__main__":
-    prompt = sys.argv[1]
-    pretrained_model_path = sys.argv[2]
-    tokenizer_model_path = sys.argv[3] if len(sys.argv) > 3 else pretrained_model_path
-    print(run_hf_pipeline(prompt, pretrained_model_path, tokenizer_model_path))
+# if __name__ == "__main__":
+#     prompt = sys.argv[1]
+#     pretrained_model_path = sys.argv[2]
+#     tokenizer_model_path = sys.argv[3] if len(sys.argv) > 3 else pretrained_model_path
+#     print(run_hf_pipeline(prompt, pretrained_model_path, tokenizer_model_path))
 

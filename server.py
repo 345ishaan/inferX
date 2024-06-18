@@ -24,11 +24,15 @@ logging.basicConfig(level='INFO')
 
 class Message(BaseModel):
     message: str
-    user_id: str
 
 @app.get("/test")
 async def root():
-    return {"message": "Hello World"}
+    return "Hello World"
+
+@app.post("/test-post")
+async def post_root(message: Message):
+    prompt = message.message
+    return "Hello World: " + prompt
 
 @app.post("/inferx", response_class=StreamingResponse)
 async def generate_club_response(message: Message) -> StreamingResponse:

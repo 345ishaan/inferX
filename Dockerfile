@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir "huggingface_hub[cli]" torchtune transformers acc
 
 # Logging in to Hugging Face and downloading the model
 RUN echo $HF_TOKEN | huggingface-cli login --token $HF_TOKEN
-RUN tune download microsoft/Phi-3-mini-4k-instruct --output-dir /workspace/model/phi3 --ignore-patterns ""
+# RUN tune download microsoft/Phi-3-mini-4k-instruct --output-dir /workspace/model/phi3 --ignore-patterns ""
 
 COPY run_phi3.py /workspace
 COPY server.py /workspace

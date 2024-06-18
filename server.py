@@ -22,9 +22,6 @@ logger = logging.getLogger(__name__)
 # .env variables can be validated and accessed from the config, here to set a log level
 logging.basicConfig(level='INFO')
 
-customPipeline = CustomPipeline()
-customPipeline.load_model(pretrained_model_path='/workspace/model/phi3', tokenizer_model_path='/workspace/model/phi3')
-
 class Message(BaseModel):
     message: str
     user_id: str
@@ -42,7 +39,8 @@ async def generate_club_response(message: Message) -> StreamingResponse:
     """
 
     prompt = message.message
-    
+    customPipeline = CustomPipeline()
+    customPipeline.load_model(pretrained_model_path='/workspace/model/phi3', tokenizer_model_path='/workspace/model/phi3')
     response_msg = customPipeline.run_model(prompt)
     print(response_msg)
     

@@ -1,8 +1,4 @@
-import sys
-import pdb
 import torch
-from rich import print
-from transformers import AutoTokenizer, Phi3ForCausalLM, AutoModelForCausalLM, pipeline
 from transformers import TextGenerationPipeline
 
 torch.random.manual_seed(0)
@@ -95,58 +91,4 @@ class CustomPipeline(TextGenerationPipeline):
         return records, model_outputs.get("hidden_states", None)
 
 
-    def load_flash_model(self, pretrained_model_path: str, tokenizer_model_path: str):
-        self.flash_model = AutoModelForCausalLM.from_pretrained(
-            pretrained_model_path,
-            device_map="cuda",
-            torch_dtype=torch.float16,
-            trust_remote_code=True,
-            output_hidden_states=True,
-            return_dict_in_generate=True,
-            attn_implementation="flash_attention_2",
-            eos_token_id=[32000,32001,32007]
-        )
-        self.flash_tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
-
-
-    def run_flash_model(self, prompt: str) -> str:
-        
-        messages = [
-            {"role": "user", "content": prompt},
-        ]
-        
-        pipe = CustomPipeline(
-            model=self.flash_model,
-            tokenizer=self.flash_tokenizer,
-        )
-        
-        generation_args = {
-            "max_new_tokens": 500,
-            "return_full_text": False,
-            "temperature": 0.0,
-            "do_sample": False,
-        }
-        
-        output, hidden_states = pipe(messages, **generation_args)
-
-        return output[0]['generated_text']
-
-
-    def load_model(self, pretrained_model_path: str, tokenizer_model_path: str):
-        self.model = Phi3ForCausalLM.from_pretrained(pretrained_model_path)
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
-    
-    def run_model(self, prompt: str) -> str:
-
-        inputs = self.tokenizer(prompt, return_tensors="pt")
-        generate_ids = self.model.generate(inputs.input_ids, max_length=30)
-        
-        return self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-
-
-# if __name__ == "__main__":
-#     prompt = sys.argv[1]
-#     pretrained_model_path = sys.argv[2]
-#     tokenizer_model_path = sys.argv[3] if len(sys.argv) > 3 else pretrained_model_path
-#     print(run_hf_pipeline(prompt, pretrained_model_path, tokenizer_model_path))
 

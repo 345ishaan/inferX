@@ -29,22 +29,16 @@ async def post_root(message: Message):
     prompt = message.message
     return "Hello World: " + prompt
 
-@app.post("/inferx", response_class=StreamingResponse)
-async def generate_club_response(message: Message) -> StreamingResponse:
+@app.post("/inferx")
+async def generate_club_response(message: Message):
     """Endpoint for chat requests.
-    It uses the StreamingConversationChain instance to generate responses,
-    and then sends these responses as a streaming response.
-    :param data: The request data.
     """
 
     prompt = message.message
     response_msg = phi3.run_model(prompt)
     print(response_msg)
     
-    return StreamingResponse(
-        response_msg,
-        media_type="text/event-stream",
-    )
+    return response_msg
     
 html = """
 <!DOCTYPE html>

@@ -20,4 +20,21 @@
 
 ## Docker Instructions
 
+### Build Image
+
 `docker build -t inference-phi-3-mini-4k-instruct --build-arg HF_TOKEN={HF_TOKEN} .`
+
+### Run Container
+
+`docker run --gpus all -d -p 8080:8080 inference-phi-3-mini-4k-instruct`
+
+### Send Sample Request
+
+`
+curl --location --request POST 'http://0.0.0.0:8080/inferx' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "message": "Hello, how are you?"
+}'
+`
+

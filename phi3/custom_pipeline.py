@@ -6,10 +6,6 @@ torch.random.manual_seed(0)
 
 class CustomPipeline(TextGenerationPipeline):
 
-    def __init__(self):
-        self.model = None
-        self.tokenizer = None
-
     def _forward(self, model_inputs, **generate_kwargs):
         input_ids = model_inputs["input_ids"]
         attention_mask = model_inputs.get("attention_mask", None)

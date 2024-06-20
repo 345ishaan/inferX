@@ -15,7 +15,8 @@ RUN pip install flash-attn --no-build-isolation
 RUN echo $HF_TOKEN | huggingface-cli login --token $HF_TOKEN
 RUN tune download microsoft/Phi-3-mini-4k-instruct --output-dir /workspace/model/phi3 --ignore-patterns ""
 
-COPY phi3 /workspace
+ADD phi3 /workspace/phi3
+COPY server.py /workspace
 
 WORKDIR /workspace
 

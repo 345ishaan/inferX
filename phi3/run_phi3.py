@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from custom_pipeline import CustomPipeline
+from phi3.custom_pipeline import CustomPipeline
 
 class Phi3():
 

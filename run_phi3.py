@@ -95,9 +95,8 @@ class CustomPipeline(TextGenerationPipeline):
         return records, model_outputs.get("hidden_states", None)
 
 
-
-    def run_hf_pipeline(self, prompt: str, pretrained_model_path: str, tokenizer_model_path: str) -> str:
-        model = AutoModelForCausalLM.from_pretrained(
+    def load_flash_model(self, pretrained_model_path: str, tokenizer_model_path: str):
+        self.flash_model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_path,
             device_map="cuda",
             torch_dtype=torch.float16,
@@ -107,15 +106,18 @@ class CustomPipeline(TextGenerationPipeline):
             attn_implementation="flash_attention_2",
             eos_token_id=[32000,32001,32007]
         )
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
+        self.flash_tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_path)
+
+
+    def run_flash_model(self, prompt: str) -> str:
         
         messages = [
             {"role": "user", "content": prompt},
         ]
         
         pipe = CustomPipeline(
-            model=model,
-            tokenizer=tokenizer,
+            model=self.flash_model,
+            tokenizer=self.flash_tokenizer,
         )
         
         generation_args = {

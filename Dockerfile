@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.3.1-cuda11.8-cudnn8-runtime
+FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-devel
 
 ARG HF_TOKEN
 ENV HF_TOKEN $HF_TOKEN
@@ -9,11 +9,11 @@ RUN apt-get update && apt-get install -y vim curl git && rm -rf /var/lib/apt/lis
 RUN mkdir -p /workspace/model
 
 RUN pip install --no-cache-dir "huggingface_hub[cli]" torchtune transformers accelerate rich fastapi
-# RUN pip install flash-attn --no-build-isolation
+RUN pip install flash-attn --no-build-isolation
 
 # Logging in to Hugging Face and downloading the model
 RUN echo $HF_TOKEN | huggingface-cli login --token $HF_TOKEN
-# RUN tune download microsoft/Phi-3-mini-4k-instruct --output-dir /workspace/model/phi3 --ignore-patterns ""
+RUN tune download microsoft/Phi-3-mini-4k-instruct --output-dir /workspace/model/phi3 --ignore-patterns ""
 
 COPY run_phi3.py /workspace
 COPY server.py /workspace

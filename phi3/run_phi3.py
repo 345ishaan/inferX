@@ -3,7 +3,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from phi3.custom_pipeline import CustomPipeline
 
-class Phi3():
+class Phi3:
 
     def load_model(self, pretrained_model_path: str, tokenizer_model_path: str):
         self.model = AutoModelForCausalLM.from_pretrained(
